@@ -6,7 +6,7 @@ keywords:
   - prometheus
   - mongodb
   - mongo
-home: https://www.baidu.com
+home: https://github.com/ica10888/chart-prometheus-mongodb-exporter
 sources:
   - https://hub.docker.com/r/ssalaues/mongodb-exporter
 maintainers:
