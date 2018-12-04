@@ -31,7 +31,8 @@ metrics:
   prometheusServiceDiscovery: true
   resources: {}
 mongodb:
-  address: mongo-dev-mongodb.dev
+# mongodb service name
+  address: mongo-mongodb
   port: 27017
 #  mongodb connection username and password
 auth:
@@ -42,5 +43,5 @@ auth:
 persistence:
   storageSize: 5Gi
   
-nodeSelector:
-  kubernetes.io/hostname: 172.16.20.62
+# nodeSelector:
+#   kubernetes.io/hostname: ip
