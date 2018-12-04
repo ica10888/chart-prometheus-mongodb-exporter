@@ -1,0 +1,74 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "prometheus-mongodb-exporter.fullname" . }}
+  labels:
+    app: {{ template "prometheus-mongodb-exporter.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "prometheus-mongodb-exporter.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      annotations:
+{{ toYaml .Values.annotations | indent 8 }}
+      labels:
+        app: {{ template "prometheus-mongodb-exporter.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ template "prometheus-mongodb-exporter.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ .Values.metrics.image.repository }}:{{ .Values.metrics.image.tag }}
+          imagePullPolicy: {{ .Values.metrics.image.pullPolicy }}
+          ports:
+            - name: exporter-port
+              containerPort: {{ .Values.metrics.port }}
+          env:
+          {{- if .Values.auth.enabled }}
+            - name: METRICS_USER
+              value: {{ .Values.metrics.auth.user }}
+            - name: METRICS_PASSWORD
+              value: {{ .Values.metrics.auth.password }}
+          {{- end }}
+          command:
+            - sh
+            - -ec
+            - >-
+            {{- if .Values.auth.enabled }}
+              export MONGODB_URL=mongodb://$METRICS_USER:$METRICS_PASSWORD@{{ .Values.mongodb.address }}:{{ .Values.mongodb.port }};
+            {{- else }}
+              export MONGODB_URL=mongodb://{{ .Values.mongodb.address }}:{{ .Values.mongodb.port }};
+            {{- end }}
+              /bin/mongodb_exporter
+              -mongodb.socket-timeout={{ .Values.metrics.socketTimeout }}
+              -mongodb.sync-timeout={{ .Values.metrics.syncTimeout }}
+              -web.metrics-path={{ .Values.metrics.path }}
+              -web.listen-address=:{{ .Values.metrics.port }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: exporter-port
+          readinessProbe:
+            httpGet:
+              path: /
+              port: exporter-port
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          volumeMounts:
+            - name: workdir
+              mountPath: /work-dir
+              readOnly: true
+      volumes:
+      - name: workdir
+        persistentVolumeClaim:
+          claimName: {{ template "prometheus-mongodb-exporter.fullname" . }}
+{{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+{{- end }}

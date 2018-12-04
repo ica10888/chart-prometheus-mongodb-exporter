@@ -1,0 +1,14 @@
+name: prometheus-mongodb-exporter
+version: 1.0.0
+appVersion: 0.6.1
+description:  Prometheus exporter for mongodb metrics
+keywords:
+  - prometheus
+  - mongodb
+  - mongo
+home: https://www.baidu.com
+sources:
+  - https://hub.docker.com/r/ssalaues/mongodb-exporter
+maintainers:
+  - name: ica10888
+    email: ica10888@gmail.com
